@@ -31,31 +31,37 @@ public class DominoChainValueCalculator {
 
         dominos.remove(usedDominoIndex);
 
+        int currentHighestValue = 0;
+
         for (int index = 0; index < dominos.size(); index++) {
             Domino currentDomino = dominos.get(index);
             if (isMatchingDominos(startingDomino.getFront(), currentDomino.getFront())) {
-
-                context = buildContext(startingDomino.getFront().getValue(), index,
-                        createMergedDomino(startingDomino.getBack(), currentDomino.getBack()));
-                break;
+                if (currentHighestValue < startingDomino.getFront().getValue()) {
+                    currentHighestValue = startingDomino.getFront().getValue();
+                    context = buildContext(startingDomino.getFront().getValue(), index,
+                            createMergedDomino(startingDomino.getBack(), currentDomino.getBack()));
+                }
 
             } else if (isMatchingDominos(startingDomino.getFront(), currentDomino.getBack())) {
-
-                context = buildContext(startingDomino.getFront().getValue(), index,
-                        createMergedDomino(startingDomino.getBack(), currentDomino.getFront()));
-                break;
+                if (currentHighestValue < startingDomino.getFront().getValue()) {
+                    currentHighestValue = startingDomino.getFront().getValue();
+                    context = buildContext(startingDomino.getFront().getValue(), index,
+                            createMergedDomino(startingDomino.getBack(), currentDomino.getFront()));
+                }
 
             } else if (isMatchingDominos(startingDomino.getBack(), currentDomino.getFront())) {
-
-                context = buildContext(startingDomino.getBack().getValue(), usedDominoIndex,
-                        createMergedDomino(startingDomino.getFront(), currentDomino.getBack()));
-                break;
+                if (currentHighestValue < startingDomino.getBack().getValue()) {
+                    currentHighestValue = startingDomino.getBack().getValue();
+                    context = buildContext(startingDomino.getBack().getValue(), index,
+                            createMergedDomino(startingDomino.getFront(), currentDomino.getBack()));
+                }
 
             } else if (isMatchingDominos(startingDomino.getBack(), currentDomino.getBack())) {
-
-                context = buildContext(startingDomino.getBack().getValue(), index,
-                        createMergedDomino(startingDomino.getFront(), currentDomino.getFront()));
-                break;
+                if (currentHighestValue < startingDomino.getBack().getValue()) {
+                    currentHighestValue = startingDomino.getBack().getValue();
+                    context = buildContext(startingDomino.getBack().getValue(), index,
+                            createMergedDomino(startingDomino.getFront(), currentDomino.getFront()));
+                }
             }
         }
 
