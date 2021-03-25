@@ -62,7 +62,7 @@ public class DominoChainValueCalculator {
 
             // dominoToCompare is merge of 2 pieces, iterate through all pieces and find other pieces to merge with
             for (int secondIndex = 0; secondIndex < dominosSize; secondIndex++) {
-                // skip the starting pieces that were already merged
+                // skip the starting pieces and it's pair
                 if (secondIndex == startingPieceIndex || secondIndex == firstIndex) {
                     continue;
                 }
