@@ -7,6 +7,7 @@ public class Domino {
 
     private Face front;
     private Face back;
+    private boolean wasUsed;
 
     public Face getFront() {
         return front;
@@ -22,5 +23,13 @@ public class Domino {
 
     public void setBack(Face back) {
         this.back = back;
+    }
+
+    public boolean isWasUsed() {
+        return wasUsed;
+    }
+
+    public void setWasUsed(boolean wasUsed) {
+        this.wasUsed = wasUsed;
     }
 }
