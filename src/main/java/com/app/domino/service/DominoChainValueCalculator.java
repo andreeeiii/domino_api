@@ -5,7 +5,9 @@ import com.app.domino.model.Domino;
 import com.app.domino.model.Face;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -27,71 +29,67 @@ public class DominoChainValueCalculator {
 
         int dominosSize = dominos.size();
         int highestSum = 0;
+        Set<Integer> firstMergedPieceIndexes = new HashSet<>();
 
         // iterate through all the pieces
-        for (int firstIndex = 0; firstIndex < dominosSize; firstIndex++) {
+        for (int index = 0; index < dominosSize; index++) {
 
             int currentSum = 0;
 
-            if (firstIndex == startingPieceIndex) {
-                continue;
-            }
-
             Domino dominoToCompare = dominos.get(startingPieceIndex);
-            Domino dominoToMergeWith = dominos.get(firstIndex);
 
-            // check to see if you can merge starting piece with current piece
-            if (!arePiecesMatching(dominoToCompare, dominoToMergeWith)) {
-                continue;
-            }
+            Set<Integer> usedPiecesIndex = new HashSet<>();
 
-            // if this is reached it means we can do the merge
-            if (isMatchingDominos(dominoToCompare.getFront(), dominoToMergeWith.getFront())) {
-                currentSum += dominoToCompare.getFront().getValue();
-                dominoToCompare = createMergedDomino(dominoToCompare.getBack(), dominoToMergeWith.getBack());
-            } else if (isMatchingDominos(dominoToCompare.getFront(), dominoToMergeWith.getBack())) {
-                currentSum += dominoToCompare.getFront().getValue();
-                dominoToCompare = createMergedDomino(dominoToCompare.getBack(), dominoToMergeWith.getFront());
-            } else if (isMatchingDominos(dominoToCompare.getBack(), dominoToMergeWith.getFront())) {
-                currentSum += dominoToCompare.getBack().getValue();
-                dominoToCompare = createMergedDomino(dominoToCompare.getFront(), dominoToMergeWith.getBack());
-            } else if (isMatchingDominos(dominoToCompare.getBack(), dominoToMergeWith.getBack())) {
-                currentSum += dominoToCompare.getBack().getValue();
-                dominoToCompare = createMergedDomino(dominoToCompare.getFront(), dominoToMergeWith.getFront());
-            }
+            boolean wasFirstPieceFound = false;
 
-            // dominoToCompare is merge of 2 pieces, iterate through all pieces and find other pieces to merge with
             for (int secondIndex = 0; secondIndex < dominosSize; secondIndex++) {
-                // skip the starting pieces and it's pair
-                if (secondIndex == startingPieceIndex || secondIndex == firstIndex) {
+
+                // we cannot merge the current domino with the starting piece or the piece that is already in the chain
+                if (secondIndex == startingPieceIndex || usedPiecesIndex.contains(secondIndex)) {
                     continue;
                 }
-                Domino currentDomino = dominos.get(secondIndex);
-                if (isMatchingDominos(dominoToCompare.getFront(), currentDomino.getFront())) {
-                    currentSum += dominoToCompare.getFront().getValue();
-                    dominoToCompare = createMergedDomino(dominoToCompare.getBack(), currentDomino.getBack());
-                } else if (isMatchingDominos(dominoToCompare.getFront(), currentDomino.getBack())) {
-                    currentSum += dominoToCompare.getFront().getValue();
-                    dominoToCompare = createMergedDomino(dominoToCompare.getBack(), currentDomino.getFront());
-                } else if (isMatchingDominos(dominoToCompare.getBack(), currentDomino.getFront())) {
-                    currentSum += dominoToCompare.getBack().getValue();
-                    dominoToCompare = createMergedDomino(dominoToCompare.getFront(), currentDomino.getBack());
-                } else if (isMatchingDominos(dominoToCompare.getBack(), currentDomino.getBack())) {
-                    currentSum += dominoToCompare.getBack().getValue();
-                    dominoToCompare = createMergedDomino(dominoToCompare.getFront(), currentDomino.getFront());
-                } else {
-                    // did not find any dominos to match then start again with next piece pair
-                    if (highestSum < currentSum) {
-                        highestSum = currentSum;
-                        break;
-                    }
+
+                // we start merging the starting piece with the first piece that was not chosen before
+                if (!wasFirstPieceFound && firstMergedPieceIndexes.contains(secondIndex)) {
+                    continue;
                 }
 
-                // in case the last piece is merged we need to do another compare and set the new highest value
+                Domino dominoToMergeWith = dominos.get(secondIndex);
+
+                // to not repeat the same starting point which is the starting piece and the first piece found
+                if (arePiecesMatching(dominoToCompare, dominoToMergeWith) && !wasFirstPieceFound) {
+                    wasFirstPieceFound = true;
+                    firstMergedPieceIndexes.add(secondIndex);
+                }
+
+                // calculate new chain and current sum and reset index to retry finding new dominos with the new chain
+                if (isMatchingDominos(dominoToCompare.getFront(), dominoToMergeWith.getFront())) {
+                    currentSum += dominoToCompare.getFront().getValue();
+                    dominoToCompare = createMergedDomino(dominoToCompare.getBack(), dominoToMergeWith.getBack());
+                    usedPiecesIndex.add(secondIndex);
+                    secondIndex = 0;
+                } else if (isMatchingDominos(dominoToCompare.getFront(), dominoToMergeWith.getBack())) {
+                    currentSum += dominoToCompare.getFront().getValue();
+                    dominoToCompare = createMergedDomino(dominoToCompare.getBack(), dominoToMergeWith.getFront());
+                    usedPiecesIndex.add(secondIndex);
+                    secondIndex = 0;
+                } else if (isMatchingDominos(dominoToCompare.getBack(), dominoToMergeWith.getFront())) {
+                    currentSum += dominoToCompare.getBack().getValue();
+                    dominoToCompare = createMergedDomino(dominoToCompare.getFront(), dominoToMergeWith.getBack());
+                    usedPiecesIndex.add(secondIndex);
+                    secondIndex = 0;
+                } else if (isMatchingDominos(dominoToCompare.getBack(), dominoToMergeWith.getBack())) {
+                    currentSum += dominoToCompare.getBack().getValue();
+                    dominoToCompare = createMergedDomino(dominoToCompare.getFront(), dominoToMergeWith.getFront());
+                    usedPiecesIndex.add(secondIndex);
+                    secondIndex = 0;
+                }
+
                 if (highestSum < currentSum) {
                     highestSum = currentSum;
                 }
             }
+
         }
 
         return highestSum;
